@@ -27,7 +27,7 @@ app.use(express.json());
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(cors({
-  origin: 'http://localhost:3001',
+  origin: 'https://hotel-brasileiro-front.vercel.app',
   exposedHeaders: ['Authorization'] // Permite que o frontend acesse o header
 }));
 
