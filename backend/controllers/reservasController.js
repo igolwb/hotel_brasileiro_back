@@ -35,6 +35,14 @@ export const criarReserva = async (req, res) => {
     return res.status(400).json({ error: "A data de início deve ser anterior à data de fim" });
   }
 
+  // Nova validação: não permitir reservas no passado
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0); // Zera horas para comparar apenas a data
+  const dataInicio = new Date(inicio);
+  if (dataInicio < hoje) {
+    return res.status(400).json({ error: "Não é possível fazer reservas no passado." });
+  }
+
   try {
     // Verificar disponibilidade
     const disponibilidadeResult = await sql`
