@@ -6,10 +6,14 @@ import {
   buscarReservaId,
   atualizarReserva,
   deletarReserva,
-  getReservasUsuario
+  getReservasUsuario,
+  getEstatisticasReservas
 } from '../controllers/reservasController.js';
 
 const router = express.Router();
+
+// Rota para estatísticas (deve vir antes de :id)
+router.get('/estatisticas', authenticateToken, getEstatisticasReservas);
 
 // Rota para reservas do usuário logado
 router.get('/minhas-reservas', authenticateToken, getReservasUsuario);
