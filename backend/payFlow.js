@@ -1,132 +1,90 @@
-// controllers/payFlow.js
-import fetch from 'node-fetch';
-import dotenv from 'dotenv';
+// backend/payFlow.js
+import express from "express";
+import fetch from "node-fetch";
+import dotenv from "dotenv";
+
 dotenv.config();
 
-// ✅ Correct PagBank Sandbox endpoint (new API)
-const SANDBOX_URL = 'https://sandbox.api.pagseguro.com/checkouts';
-const TOKEN = process.env.PAGSEGURO_SANDBOX_TOKEN;
+const router = express.Router();
+const PAGSEGURO_URL = "https://sandbox.api.pagseguro.com/orders";
 
-/**
- * Create a PagBank Checkout session
- */
-export async function createCheckout(req, res) {
+router.post("/create-checkout", async (req, res) => {
   try {
     const { referenceId, customer, items, redirectUrls } = req.body;
 
-    // Validate required fields
-    if (!referenceId || !customer || !items || items.length === 0) {
-      console.error('Missing required fields:', { referenceId, customer, items, redirectUrls });
-      return res.status(400).json({ success: false, message: 'Missing required fields' });
-    }
-
-    if (!TOKEN) {
-      console.error('❌ PAGSEGURO_SANDBOX_TOKEN not set in .env');
-      return res.status(500).json({ success: false, message: 'PagBank API token missing' });
+    if (!referenceId || !customer || !items) {
+      return res.status(400).json({ success: false, error: "Missing fields" });
     }
 
     const payload = {
       reference_id: referenceId,
       customer,
       items,
+      shipping: {
+        address: {
+          street: "Rua Teste",
+          number: "123",
+          locality: "Centro",
+          city: "São Paulo",
+          region_code: "SP",
+          country: "BRA",
+          postal_code: "01000000",
+        },
+      },
+      // ✅ Add referenceId to redirect URL
+      redirect_url: `https://hotel-brasileiro-front.vercel.app/reserva/concluida?ref=${referenceId}`,
       notification_urls: [process.env.PAGSEGURO_NOTIFICATION_URL],
-      redirect_url: "https://hotel-brasileiro-front.vercel.app/reserva/concluida",
     };
 
-    console.log('📦 Sending payload to PagBank API:\n', JSON.stringify(payload, null, 2));
-
-    const response = await fetch(SANDBOX_URL, {
-      method: 'POST',
+    const response = await fetch(PAGSEGURO_URL, {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${TOKEN}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.PAGSEGURO_SANDBOX_TOKEN}`,
       },
       body: JSON.stringify(payload),
     });
 
-    const text = await response.text();
+    const data = await response.json();
 
-    // Try to parse JSON — fallback to HTML log if not possible
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (parseErr) {
-      console.error('⚠️ PagBank returned non-JSON (likely an HTML error page):');
-      console.error(text);
-      return res.status(502).json({
-        success: false,
-        message: 'Invalid response from PagBank (HTML instead of JSON)',
-      });
+    if (response.ok && data.links) {
+      const checkoutUrl = data.links.find((l) => l.rel === "PAY").href;
+      res.status(200).json({ success: true, checkoutUrl });
+    } else {
+      console.error("PagBank error:", data);
+      res.status(500).json({ success: false, error: data });
     }
-
-    console.log('✅ PagBank API response:', JSON.stringify(data, null, 2));
-
-    if (!response.ok) {
-      console.error('❌ PagBank API returned error:', data);
-      return res.status(response.status).json({ success: false, data });
-    }
-
-    // Extract checkout URL
-    const checkoutUrl = data.links?.find(l => l.rel === 'PAY')?.href || null;
-
-    if (!checkoutUrl) {
-      console.warn('⚠️ No checkout URL returned by PagBank.');
-    }
-
-    return res.status(200).json({
-      success: true,
-      checkoutUrl,
-      data,
-    });
   } catch (error) {
-    console.error('💥 Error in createCheckout:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.error("Error creating checkout:", error);
+    res.status(500).json({ success: false, error: "Internal Server Error" });
   }
-}
+});
 
-/**
- * Handle PagBank payment notifications
- */
-export async function handleNotification(req, res) {
+// ✅ Verify payment status
+router.get("/status/:referenceId", async (req, res) => {
+  const { referenceId } = req.params;
   try {
-    const notification = req.body;
-    console.log('📩 Received PagBank notification:', JSON.stringify(notification, null, 2));
+    const response = await fetch(
+      `https://sandbox.api.pagseguro.com/orders?reference_id=${referenceId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.PAGSEGURO_SANDBOX_TOKEN}`,
+        },
+      }
+    );
 
-    // Example: Update reservation status in the database
-    const { reference_id, status } = notification;
-    if (reference_id && status) {
-      // Replace with actual database update logic
-      console.log(`Updating reservation ${reference_id} to status ${status}`);
-    }
-
-    res.status(200).json({ success: true });
+    const data = await response.json();
+    res.status(200).json(data);
   } catch (error) {
-    console.error('💥 Notification handler error:', error);
-    res.status(500).json({ success: false });
+    console.error("Error fetching status:", error);
+    res.status(500).json({ error: "Failed to fetch status" });
   }
-}
+});
 
-/**
- * Get payment status by reference ID
- */
-export async function getPaymentStatus(req, res) {
-  try {
-    const { paymentReferenceId } = req.params;
+// ✅ Webhook notifications from PagBank
+router.post("/notifications", async (req, res) => {
+  console.log("🔔 PagBank notification received:", req.body);
+  res.status(200).send("Notification received");
+});
 
-    if (!paymentReferenceId) {
-      return res.status(400).json({ success: false, message: 'Payment reference ID is required' });
-    }
-
-    // Simulate fetching payment status (replace with actual logic)
-    const paymentStatus = {
-      success: true,
-      status: 'CONFIRMED',
-    };
-
-    return res.status(200).json(paymentStatus);
-  } catch (error) {
-    console.error('Error fetching payment status:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-}
-
+export default router;
