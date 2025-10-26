@@ -30,7 +30,7 @@ export async function createCheckout(req, res) {
       customer,
       items,
       notification_urls: [process.env.PAGSEGURO_NOTIFICATION_URL],
-      redirect_url: "https://sighted-jacketless-eve.ngrok-free.dev/reserva/concluida",
+      redirect_url: "https://hotel-brasileiro-front.vercel.app/reserva/concluida",
     };
 
     console.log('📦 Sending payload to PagBank API:\n', JSON.stringify(payload, null, 2));
@@ -129,3 +129,4 @@ export async function getPaymentStatus(req, res) {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 }
+
