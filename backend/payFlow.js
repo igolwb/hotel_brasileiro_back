@@ -1,21 +1,24 @@
 // backend/payFlow.js
-import express from "express";
 import fetch from "node-fetch";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const router = express.Router();
 const PAGSEGURO_URL = "https://sandbox.api.pagseguro.com/orders";
 
-router.post("/create-checkout", async (req, res) => {
+/**
+ * 🧾 Create a PagBank Checkout (payment link)
+ */
+export async function createCheckout(req, res) {
   try {
     const { referenceId, customer, items, redirectUrls } = req.body;
 
-    if (!referenceId || !customer || !items) {
-      return res.status(400).json({ success: false, error: "Missing fields" });
+    // Basic validation
+    if (!referenceId || !customer || !items || items.length === 0) {
+      return res.status(400).json({ success: false, error: "Missing required fields" });
     }
 
+    // Build payload for PagBank API
     const payload = {
       reference_id: referenceId,
       customer,
@@ -31,10 +34,11 @@ router.post("/create-checkout", async (req, res) => {
           postal_code: "01000000",
         },
       },
-      // ✅ Add referenceId to redirect URL
       redirect_url: `https://hotel-brasileiro-front.vercel.app/reserva/concluida?ref=${referenceId}`,
       notification_urls: [process.env.PAGSEGURO_NOTIFICATION_URL],
     };
+
+    console.log("📦 Sending payload to PagBank API:\n", JSON.stringify(payload, null, 2));
 
     const response = await fetch(PAGSEGURO_URL, {
       method: "POST",
@@ -48,21 +52,29 @@ router.post("/create-checkout", async (req, res) => {
     const data = await response.json();
 
     if (response.ok && data.links) {
-      const checkoutUrl = data.links.find((l) => l.rel === "PAY").href;
-      res.status(200).json({ success: true, checkoutUrl });
+      const checkoutUrl = data.links.find((l) => l.rel === "PAY")?.href;
+      console.log("✅ Checkout created successfully:", checkoutUrl);
+      return res.status(200).json({ success: true, checkoutUrl, data });
     } else {
-      console.error("PagBank error:", data);
-      res.status(500).json({ success: false, error: data });
+      console.error("❌ PagBank API error:", data);
+      return res.status(500).json({ success: false, error: data });
     }
   } catch (error) {
-    console.error("Error creating checkout:", error);
+    console.error("💥 Error creating checkout:", error);
     res.status(500).json({ success: false, error: "Internal Server Error" });
   }
-});
+}
 
-// ✅ Verify payment status
-router.get("/status/:referenceId", async (req, res) => {
+/**
+ * 📊 Get payment status by reference ID
+ */
+export async function getPaymentStatus(req, res) {
   const { referenceId } = req.params;
+
+  if (!referenceId) {
+    return res.status(400).json({ error: "Reference ID is required" });
+  }
+
   try {
     const response = await fetch(
       `https://sandbox.api.pagseguro.com/orders?reference_id=${referenceId}`,
@@ -74,17 +86,25 @@ router.get("/status/:referenceId", async (req, res) => {
     );
 
     const data = await response.json();
+
+    console.log(`📄 Payment status for ${referenceId}:`, JSON.stringify(data, null, 2));
     res.status(200).json(data);
   } catch (error) {
-    console.error("Error fetching status:", error);
-    res.status(500).json({ error: "Failed to fetch status" });
+    console.error("💥 Error fetching payment status:", error);
+    res.status(500).json({ error: "Failed to fetch payment status" });
   }
-});
+}
 
-// ✅ Webhook notifications from PagBank
-router.post("/notifications", async (req, res) => {
-  console.log("🔔 PagBank notification received:", req.body);
-  res.status(200).send("Notification received");
-});
-
-export default router;
+/**
+ * 🔔 Handle PagBank Webhook Notifications
+ */
+export async function handleNotification(req, res) {
+  try {
+    console.log("🔔 PagBank notification received:", JSON.stringify(req.body, null, 2));
+    // TODO: handle reservation/payment update logic here
+    res.status(200).send("Notification received");
+  } catch (error) {
+    console.error("💥 Notification handler error:", error);
+    res.status(500).json({ error: "Failed to handle notification" });
+  }
+}
