@@ -2,7 +2,6 @@ import express from 'express';
 import { authenticateToken } from '../middlewares/authMiddleware.js';
 import {
   buscarReservas,
-  criarReserva,
   buscarReservaId,
   atualizarReserva,
   deletarReserva,
@@ -20,7 +19,6 @@ router.get('/minhas-reservas', authenticateToken, getReservasUsuario);
 
 // Todas as rotas que precisam de usuário autenticado usam middleware
 router.get('/', authenticateToken, buscarReservas);
-router.post('/', authenticateToken, criarReserva);
 router.get('/:id', authenticateToken, buscarReservaId);
 router.put('/:id', authenticateToken, atualizarReserva);
 router.delete('/:id', deletarReserva);
