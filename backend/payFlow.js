@@ -1,4 +1,3 @@
-// controllers/payFlow.js
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -95,12 +94,13 @@ export async function handleNotification(req, res) {
     const notification = req.body;
     console.log('📩 Received PagBank notification:', JSON.stringify(notification, null, 2));
 
-    // Extract reference_id and status for your database logic
-    const { reference_id, status } = notification;
+    // Extract proper values
+    const referenceId = notification.reference_id;
+    const status = notification.charges?.[0]?.status || 'UNKNOWN';
 
-    if (reference_id && status) {
+    if (referenceId && status) {
       // TODO: Update reservation/payment status in your database
-      console.log(`🔁 Updating reservation ${reference_id} → ${status}`);
+      console.log(`🔁 Updating reservation ${referenceId} → ${status}`);
     } else {
       console.warn('⚠️ Notification missing reference_id or status.');
     }
