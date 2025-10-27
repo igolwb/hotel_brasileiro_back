@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
+import { sql } from './config/db.js';
 dotenv.config();
 
 // ✅ Correct PagBank Sandbox endpoint (new API)
@@ -87,28 +88,83 @@ export async function createCheckout(req, res) {
 }
 
 /**
+ * Create reservation and initiate payment
+ */
+export async function createReservationAndPayment(req, res) {
+  try {
+    const { quarto_id, hospedes, inicio, fim, preco_total, customer, items } = req.body;
+
+    if (!quarto_id || !hospedes || !inicio || !fim || !preco_total || !customer || !items) {
+      return res.status(400).json({ success: false, message: 'Missing required fields' });
+    }
+
+    const referenceId = `reserva_${Date.now()}`;
+
+    // Create reservation in the database with PENDING_PAYMENT status
+    const [reservation] = await sql`
+      INSERT INTO reservas (quarto_id, hospedes, inicio, fim, preco_total, reservado_em, status, reference_id)
+      VALUES (${quarto_id}, ${hospedes}, ${inicio}, ${fim}, ${preco_total}, NOW(), 'PENDING_PAYMENT', ${referenceId})
+      RETURNING *;
+    `;
+
+    // Call PagBank API to create checkout session
+    const payload = {
+      reference_id: referenceId,
+      customer,
+      items,
+      notification_urls: [process.env.PAGSEGURO_NOTIFICATION_URL],
+      redirect_url: `https://hotel-brasileiro-front.vercel.app/reserva/concluida?referenceId=${referenceId}`,
+    };
+
+    const response = await fetch(SANDBOX_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${TOKEN}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.links) {
+      console.error('PagBank error:', data);
+      return res.status(500).json({ success: false, message: 'Failed to create PagBank checkout' });
+    }
+
+    const checkoutUrl = data.links.find((l) => l.rel === 'PAY')?.href;
+
+    return res.status(200).json({ success: true, checkoutUrl });
+  } catch (error) {
+    console.error('Error creating reservation and payment:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+}
+
+/**
  * Handle PagBank payment notifications
  */
 export async function handleNotification(req, res) {
   try {
     const notification = req.body;
-    console.log('📩 Received PagBank notification:', JSON.stringify(notification, null, 2));
-
-    // Extract proper values
     const referenceId = notification.reference_id;
     const status = notification.charges?.[0]?.status || 'UNKNOWN';
 
-    if (referenceId && status) {
-      // TODO: Update reservation/payment status in your database
-      console.log(`🔁 Updating reservation ${referenceId} → ${status}`);
-    } else {
-      console.warn('⚠️ Notification missing reference_id or status.');
+    if (!referenceId || !status) {
+      return res.status(400).json({ success: false, message: 'Invalid notification payload' });
     }
+
+    // Update reservation status in the database
+    await sql`
+      UPDATE reservas
+      SET status = ${status}
+      WHERE reference_id = ${referenceId};
+    `;
 
     res.status(200).json({ success: true });
   } catch (error) {
-    console.error('💥 Notification handler error:', error);
-    res.status(500).json({ success: false });
+    console.error('Error handling notification:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
   }
 }
 
@@ -117,27 +173,23 @@ export async function handleNotification(req, res) {
  */
 export async function getPaymentStatus(req, res) {
   try {
-    const { paymentReferenceId } = req.params;
+    const { referenceId } = req.params;
 
-    if (!paymentReferenceId) {
-      return res.status(400).json({ success: false, message: 'Payment reference ID is required' });
+    if (!referenceId) {
+      return res.status(400).json({ success: false, message: 'Reference ID is required' });
     }
 
-    // Simulated example: you’d normally fetch this from your DB
-    const paymentStatus = {
-      success: true,
-      status: 'CONFIRMED', // Example fixed status for now
-    };
+    const [reservation] = await sql`
+      SELECT status FROM reservas WHERE reference_id = ${referenceId};
+    `;
 
-    console.log(`ℹ️ Returning mock payment status for ${paymentReferenceId}: CONFIRMED`);
+    if (!reservation) {
+      return res.status(404).json({ success: false, message: 'Reservation not found' });
+    }
 
-    return res.status(200).json(paymentStatus);
+    res.status(200).json({ success: true, status: reservation.status });
   } catch (error) {
-    console.error('💥 Error fetching payment status:', error);
+    console.error('Error fetching payment status:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 }
-
-
-
-

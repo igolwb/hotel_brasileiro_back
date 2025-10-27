@@ -133,7 +133,9 @@ async function startdb() {
         inicio DATE NOT NULL,
         fim DATE NOT NULL,
         preco_total DECIMAL(10,2),
-        reservado_em TIMESTAMP WITH TIME ZONE
+        reservado_em TIMESTAMP WITH TIME ZONE,
+        status VARCHAR(50) DEFAULT 'PENDING_PAYMENT',
+        reference_id VARCHAR(255) UNIQUE
       );
     `;
 
