@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const PAGSEGURO_URL = "https://sandbox.api.pagseguro.com/orders";
+const PAGSEGURO_URL = 'https://sandbox.api.pagseguro.com/checkouts';
 const TOKEN = process.env.PAGSEGURO_SANDBOX_TOKEN;
 
 /**
@@ -109,4 +109,5 @@ export async function handleNotification(req, res) {
     res.status(500).json({ error: "Failed to handle notification" });
   }
 }
+
 
