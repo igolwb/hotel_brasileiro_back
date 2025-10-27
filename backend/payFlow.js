@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const PAGSEGURO_URL = "https://sandbox.api.pagseguro.com/orders";
+const TOKEN = process.env.PAGSEGURO_SANDBOX_TOKEN;
 
 /**
  * 🧾 Create a PagBank Checkout (payment link)
@@ -44,7 +45,7 @@ export async function createCheckout(req, res) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.PAGSEGURO_SANDBOX_TOKEN}`,
+        Authorization: `Bearer ${TOKEN}`,
       },
       body: JSON.stringify(payload),
     });
@@ -80,7 +81,7 @@ export async function getPaymentStatus(req, res) {
       `https://sandbox.api.pagseguro.com/orders?reference_id=${referenceId}`,
       {
         headers: {
-          Authorization: `Bearer ${process.env.PAGSEGURO_SANDBOX_TOKEN}`,
+          Authorization: `Bearer ${TOKEN}`,
         },
       }
     );
@@ -108,3 +109,4 @@ export async function handleNotification(req, res) {
     res.status(500).json({ error: "Failed to handle notification" });
   }
 }
+
