@@ -26,7 +26,7 @@ export async function createCheckout(req, res) {
     }
 
     // ✅ Append referenceId to redirect URL for frontend success tracking
-    const redirectUrl = `https://hotel-brasileiro-front.vercel.app/reserva/concluida?referenceId=${referenceId}`;
+    const redirectUrl = `https://test-k6vrsilm2-igolwbs-projects.vercel.app/reserva/concluida?referenceId=${referenceId}`;
 
     const payload = {
       reference_id: referenceId,
@@ -113,7 +113,7 @@ export async function createReservationAndPayment(req, res) {
       customer,
       items,
       notification_urls: [process.env.PAGSEGURO_NOTIFICATION_URL],
-      redirect_url: `https://hotel-brasileiro-front.vercel.app/reserva/concluida?referenceId=${referenceId}`,
+      redirect_url: `https://test-k6vrsilm2-igolwbs-projects.vercel.app/reserva/concluida?referenceId=${referenceId}`,
     };
 
     const response = await fetch(SANDBOX_URL, {
