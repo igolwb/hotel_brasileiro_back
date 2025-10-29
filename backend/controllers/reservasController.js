@@ -21,7 +21,14 @@ export const buscarReservas = async (req, res) => {
 // Cria uma nova reserva, validando disponibilidade, datas e calculando o preço total
 export const criarReserva = async (req, res) => {
   const { quarto_id, hospedes, inicio, fim } = req.body;
-  const cliente_id = req.user.id; // PEGA DO TOKEN JWT
+
+  // Ensure req.user is populated
+  if (!req.user || !req.user.id) {
+    console.error("[POST /reservas] Usuário não autenticado ou token inválido.");
+    return res.status(401).json({ error: "Usuário não autenticado" });
+  }
+
+  const cliente_id = req.user.id; // Extracted from token
 
   if (!quarto_id || !cliente_id || !hospedes || !inicio || !fim) {
     return res.status(400).json({ error: "Todos os campos são obrigatórios" });
@@ -71,7 +78,6 @@ export const criarReserva = async (req, res) => {
     }
 
     // Calcular número de diárias
-    const dataInicio = new Date(inicio);
     const dataFim = new Date(fim);
     const diffTime = dataFim - dataInicio;
     const diarias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));

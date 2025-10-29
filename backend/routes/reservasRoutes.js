@@ -14,7 +14,15 @@ import {
   verificarTokenRecuperacao,
   redefinirSenhaPorEmail
 } from '../controllers/clientesController.js';
-
+import {
+  buscarReservas,
+  criarReserva,
+  buscarReservaId,
+  atualizarReserva,
+  deletarReserva,
+  getReservasUsuario,
+  getEstatisticasReservas,
+} from '../controllers/reservasController.js';
 
 const router = express.Router();
 
@@ -32,5 +40,13 @@ router.post('/send-token-verify', verificarTokenRecuperacao);
 // Rota para redefinir senha usando email
 router.post('/update-password', redefinirSenhaPorEmail);
 router.put('/:id/ft_perfil', upload.single('ft_perfil'), atualizarFotoPerfil);
+
+// Rota para reservas
+router.post('/reservas', authenticateToken, criarReserva);
+router.get('/reservas/:id', authenticateToken, buscarReservaId);
+router.put('/reservas/:id', authenticateToken, atualizarReserva);
+router.delete('/reservas/:id', authenticateToken, deletarReserva);
+router.get('/reservas/usuario', authenticateToken, getReservasUsuario);
+router.get('/reservas/estatisticas', authenticateToken, getEstatisticasReservas);
 
 export default router;
