@@ -1,26 +1,36 @@
 import express from 'express';
 import { authenticateToken } from '../middlewares/authMiddleware.js';
+import upload from '../config/multerconfig.js';
 import {
-  buscarReservas,
-  buscarReservaId,
-  atualizarReserva,
-  deletarReserva,
-  getReservasUsuario,
-  getEstatisticasReservas
-} from '../controllers/reservasController.js';
+  buscarClientes,
+  buscarClienteId,
+  criarCliente,
+  atualizarCliente,
+  deletarCliente,
+  buscarClienteMe,
+  buscarReservasCliente,
+  atualizarFotoPerfil,
+  enviarTokenRecuperacao,
+  verificarTokenRecuperacao,
+  redefinirSenhaPorEmail
+} from '../controllers/clientesController.js';
+
 
 const router = express.Router();
 
-// Rota para estatísticas (deve vir antes de :id)
-router.get('/estatisticas', authenticateToken, getEstatisticasReservas);
-
-// Rota para reservas do usuário logado
-router.get('/minhas-reservas', authenticateToken, getReservasUsuario);
-
 // Todas as rotas que precisam de usuário autenticado usam middleware
-router.get('/', authenticateToken, buscarReservas);
-router.get('/:id', authenticateToken, buscarReservaId);
-router.put('/:id', authenticateToken, atualizarReserva);
-router.delete('/:id', deletarReserva);
+router.get('/', authenticateToken, buscarClientes);
+router.get('/me', authenticateToken, buscarClienteMe);
+router.get('/:id', authenticateToken, buscarClienteId);
+router.get('/:id/reservas', authenticateToken, buscarReservasCliente);
+router.put('/:id', authenticateToken, atualizarCliente);
+router.delete('/:id', authenticateToken, deletarCliente);
+router.post('/', criarCliente);
+router.post('/send-token', enviarTokenRecuperacao);
+router.post('/send-token-verify', verificarTokenRecuperacao);
+
+// Rota para redefinir senha usando email
+router.post('/update-password', redefinirSenhaPorEmail);
+router.put('/:id/ft_perfil', upload.single('ft_perfil'), atualizarFotoPerfil);
 
 export default router;

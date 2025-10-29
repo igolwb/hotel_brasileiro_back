@@ -18,6 +18,86 @@ export const buscarReservas = async (req, res) => {
   }
 };
 
+// Cria uma nova reserva, validando disponibilidade, datas e calculando o preço total
+export const criarReserva = async (req, res) => {
+  const { quarto_id, hospedes, inicio, fim } = req.body;
+  const cliente_id = req.user.id; // PEGA DO TOKEN JWT
+
+  if (!quarto_id || !cliente_id || !hospedes || !inicio || !fim) {
+    return res.status(400).json({ error: "Todos os campos são obrigatórios" });
+  }
+
+  if (isNaN(quarto_id) || isNaN(cliente_id) || isNaN(hospedes)) {
+    return res.status(400).json({ error: "IDs e número de hóspedes devem ser números" });
+  }
+
+  if (new Date(inicio) >= new Date(fim)) {
+    return res.status(400).json({ error: "A data de início deve ser anterior à data de fim" });
+  }
+
+  // Nova validação: não permitir reservas no passado
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0); // Zera horas para comparar apenas a data
+  const dataInicio = new Date(inicio);
+  if (dataInicio < hoje) {
+    return res.status(400).json({ error: "Não é possível fazer reservas no passado." });
+  }
+
+  try {
+    // Verificar disponibilidade
+    const disponibilidadeResult = await sql`
+      SELECT 
+        q.quantidade AS total_quartos,
+        q.preco,
+        COUNT(r.id) AS reservas_no_periodo
+      FROM quartos q
+      LEFT JOIN reservas r 
+        ON r.quarto_id = q.id 
+        AND (r.inicio <= ${fim} AND r.fim >= ${inicio})
+      WHERE q.id = ${quarto_id}
+      GROUP BY q.quantidade, q.preco;
+    `;
+
+    if (disponibilidadeResult.length === 0) {
+      return res.status(404).json({ error: "Quarto não encontrado" });
+    }
+
+    const { total_quartos, reservas_no_periodo, preco } = disponibilidadeResult[0];
+
+    if (reservas_no_periodo >= total_quartos) {
+      return res.status(400).json({
+        error: "Não há quartos disponíveis para este período",
+      });
+    }
+
+    // Calcular número de diárias
+    const dataInicio = new Date(inicio);
+    const dataFim = new Date(fim);
+    const diffTime = dataFim - dataInicio;
+    const diarias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diarias <= 0) {
+      return res.status(400).json({ error: "A data de fim deve ser após a data de início." });
+    }
+
+    // Calcular preço total
+    const preco_total = Number(preco) * diarias;
+
+      // Inserir reserva com preco_total e reservado_em
+      const reservaResult = await sql`
+        INSERT INTO reservas 
+          (quarto_id, cliente_id, hospedes, inicio, fim, preco_total, reservado_em)
+        VALUES 
+          (${quarto_id}, ${cliente_id}, ${hospedes}, ${inicio}, ${fim}, ${preco_total}, NOW())
+        RETURNING *;
+      `;
+
+    res.status(201).json({ success: true, data: reservaResult[0] });
+  } catch (error) {
+    console.error("Erro ao criar reserva:", error);
+    res.status(500).json({ error: "Erro ao processar a reserva" });
+  }
+};
+
 // Busca uma reserva específica pelo id fornecido na URL
 export const buscarReservaId = async (req, res) => {
   const { id } = req.params;
@@ -207,4 +287,3 @@ export const getEstatisticasReservas = async (req, res) => {
     res.status(500).json({ error: 'Erro ao buscar estatísticas' });
   }
 }
-
