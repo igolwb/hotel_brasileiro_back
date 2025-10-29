@@ -33,8 +33,8 @@ const getLocalIP = () => {
 
 const app = express();
 const LOCAL_IP = getLocalIP();
-const WEB_FRONT_PORT = process.env.WEB_FRONT_PORT || `https://hotel-brasileiro-front-j0hugczls-igolwbs-projects.vercel.app`;
-const WEB_BACK_PORT = process.env.WEB_BACK_PORT || `https://hotel-brasileiro-back.onrender.com`;
+const WEB_FRONT_PORT = process.env.WEB_FRONT_PORT || `https://test-nh6ib31ab-igolwbs-projects.vercel.app/`;
+const WEB_BACK_PORT = process.env.WEB_BACK_PORT || `https://test-back-7vih.onrender.com/`;
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // Middlewares
