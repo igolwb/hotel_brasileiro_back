@@ -4,14 +4,16 @@ import nodemailer from 'nodemailer';
 // Exemplo: await sendTokenEmail(email, token)
 const sendTokenEmail = async (email, token) => {
 	const transporter = nodemailer.createTransport({
-		service: 'gmail',
+		host: 'smtp.gmail.com', // Use Gmail's SMTP host
+		port: 465, // Use port 465 for SSL/TLS
+		secure: true, // Use SSL/TLS
 		auth: {
 			user: process.env.EMAIL_USER,
 			pass: process.env.EMAIL_PASS
 		},
-		  connectionTimeout: 10000, // Increase timeout to 10 seconds
-		    debug: true, // Enable debug output
-  			logger: true //
+		connectionTimeout: 20000, // Increase timeout to 20 seconds
+		debug: true, // Enable debug output
+		logger: true // Enable logging
 	});
 
 	const mailOptions = {
