@@ -33,8 +33,8 @@ const getLocalIP = () => {
 
 const app = express();
 const LOCAL_IP = getLocalIP();
-const WEB_FRONT_PORT = process.env.WEB_FRONT_PORT || `https://test-k6vrsilm2-igolwbs-projects.vercel.app`;
-const WEB_BACK_PORT = process.env.WEB_BACK_PORT || `https://scared-kristien-igoty1910-978c1b13.koyeb.app/`;
+const WEB_FRONT_PORT = process.env.WEB_FRONT_PORT || `http://localhost:8081`;
+const WEB_BACK_PORT = process.env.WEB_BACK_PORT || `silent-delly-igoty1910-d4780979.koyeb.app`;
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // Middlewares
