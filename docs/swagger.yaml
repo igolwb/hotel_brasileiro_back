@@ -5,7 +5,7 @@ info:
   description: API para gerenciar quartos, clientes e reservas de um hotel.
 
 servers:
-  - url: silent-delly-igoty1910-d4780979.koyeb.app
+  - url: https://scared-kristien-igoty1910-978c1b13.koyeb.app
     description: Servidor local de desenvolvimento
 
 paths:
