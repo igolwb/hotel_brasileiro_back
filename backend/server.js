@@ -33,7 +33,7 @@ const getLocalIP = () => {
 
 const app = express();
 const LOCAL_IP = getLocalIP();
-const WEB_FRONT_PORT = process.env.WEB_FRONT_PORT || `http://localhost:8081`;
+const WEB_FRONT_PORT = process.env.WEB_FRONT_PORT || `https://test-one-flax-17.vercel.app`;
 const WEB_BACK_PORT = process.env.WEB_BACK_PORT || `silent-delly-igoty1910-d4780979.koyeb.app`;
 const JWT_SECRET = process.env.JWT_SECRET;
 

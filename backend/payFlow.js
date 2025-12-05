@@ -113,7 +113,7 @@ export async function createReservationAndPayment(req, res) {
       customer,
       items,
       notification_urls: [process.env.PAGSEGURO_NOTIFICATION_URL],
-      redirect_url: `http://localhost:8081/reserva/concluida?referenceId=${referenceId}`,
+      redirect_url: `https://test-one-flax-17.vercel.app/reserva/concluida?referenceId=${referenceId}`,
     };
 
     const response = await fetch(SANDBOX_URL, {
