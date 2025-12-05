@@ -26,7 +26,7 @@ export async function createCheckout(req, res) {
     }
 
     // ✅ Append referenceId to redirect URL for frontend success tracking
-    const redirectUrl = `hotelbrasileiro://reservas/reservaFinish?referenceId=${referenceId}`;
+    const redirectUrl = `https://test-one-flax-17.vercel.app/reserva/concluida?referenceId=${referenceId}`;
 
     const payload = {
       reference_id: referenceId,
