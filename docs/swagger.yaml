@@ -5,7 +5,7 @@ info:
   description: API para gerenciar quartos, clientes e reservas de um hotel.
 
 servers:
-  - url: https://scared-kristien-igoty1910-978c1b13.koyeb.app
+  - url: https://hotel-brasileiro-back.onrender.com
     description: Servidor local de desenvolvimento
 
 paths:

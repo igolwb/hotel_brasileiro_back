@@ -34,7 +34,7 @@ const getLocalIP = () => {
 const app = express();
 const LOCAL_IP = getLocalIP();
 const WEB_FRONT_PORT = process.env.WEB_FRONT_PORT || `https://test-one-flax-17.vercel.app`;
-const WEB_BACK_PORT = process.env.WEB_BACK_PORT || `https://scared-kristien-igoty1910-978c1b13.koyeb.app`;
+const WEB_BACK_PORT = process.env.WEB_BACK_PORT || `https://hotel-brasileiro-back-1.onrender.com`;
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // Middlewares
@@ -136,6 +136,18 @@ async function startdb() {
         reservado_em TIMESTAMP WITH TIME ZONE,
         status VARCHAR(50) DEFAULT 'PENDING_PAYMENT',
         reference_id VARCHAR(255) UNIQUE
+      );
+    `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS clientes_temp (
+        id SERIAL PRIMARY KEY,
+        nome VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL UNIQUE,
+        telefone VARCHAR(255) NOT NULL,
+        senha VARCHAR(255) NOT NULL,
+        confirmation_code VARCHAR(6) NOT NULL,
+        code_expiration TIMESTAMP NOT NULL
       );
     `;
 

@@ -12,7 +12,9 @@ import {
   atualizarFotoPerfil,
   enviarTokenRecuperacao,
   verificarTokenRecuperacao,
-  redefinirSenhaPorEmail
+  redefinirSenhaPorEmail,
+  confirmarCliente,
+  enviarCodigoConfirmacao
 } from '../controllers/clientesController.js';
 
 
@@ -28,9 +30,13 @@ router.delete('/:id', authenticateToken, deletarCliente);
 router.post('/', criarCliente);
 router.post('/send-token', enviarTokenRecuperacao);
 router.post('/send-token-verify', verificarTokenRecuperacao);
+router.post('/send-confirmation-code', enviarCodigoConfirmacao);
 
 // Rota para redefinir senha usando email
 router.post('/update-password', redefinirSenhaPorEmail);
 router.put('/:id/ft_perfil', upload.single('ft_perfil'), atualizarFotoPerfil);
+
+// Rota para confirmar código e criar cliente definitivo
+router.post('/confirm', confirmarCliente);
 
 export default router;

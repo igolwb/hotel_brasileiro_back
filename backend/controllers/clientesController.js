@@ -1,4 +1,3 @@
-
 import sendTokenEmail from '../nodemailer.js';
 import bcrypt from 'bcrypt';
 import { sql } from "../config/db.js";
@@ -228,7 +227,7 @@ export const enviarTokenRecuperacao = async (req, res) => {
       WHERE id = ${user.id}
     `;
     // Enviar email
-    await sendTokenEmail(email, token);
+    await sendTokenEmail(email, token, 'recuperacao');
     return res.status(200).json({ success: true, message: 'Token enviado para o email.' });
   } catch (error) {
     console.error('[POST /clientes/send-token] Erro ao enviar token:', error);
@@ -279,5 +278,86 @@ export const redefinirSenhaPorEmail = async (req, res) => {
   } catch (err) {
     console.error('[POST /clientes/update-password] Erro ao redefinir senha:', err);
     return res.status(500).json({ success: false, message: 'Erro ao redefinir senha.' });
+  }
+};
+
+// Sends a confirmation email with a unique code to the user
+export const enviarCodigoConfirmacao = async (req, res) => {
+  const { nome, email, telefone, senha } = req.body;
+
+  if (!nome || !email || !telefone || !senha) {
+    return res.status(400).json({ success: false, message: 'Preencha todos os campos!' });
+  }
+
+  try {
+    // Generate a secure 6-character confirmation code
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let confirmationCode = '';
+    for (let i = 0; i < 6; i++) {
+      confirmationCode += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    // Set expiration for 1 hour from now
+    const expiration = new Date(Date.now() + 60 * 60 * 1000);
+
+    // Save the confirmation code and expiration in the database
+    await sql`
+      INSERT INTO clientes_temp (nome, email, telefone, senha, confirmation_code, code_expiration)
+      VALUES (${nome}, ${email}, ${telefone}, ${senha}, ${confirmationCode}, ${expiration})
+    `;
+
+    // Send the confirmation email
+    await sendTokenEmail(email, confirmationCode, 'confirmacao');
+
+    res.status(200).json({ success: true, message: 'Código de confirmação enviado para o email.' });
+  } catch (error) {
+    console.error('[POST /clientes/send-confirmation-code] Erro ao enviar código de confirmação:', error);
+    res.status(500).json({ success: false, message: 'Erro ao enviar código de confirmação.' });
+  }
+};
+
+// Verifies the confirmation code and completes user registration
+export const confirmarCliente = async (req, res) => {
+  const { nome, email, telefone, senha, confirmationCode } = req.body;
+
+  if (!nome || !email || !telefone || !senha || !confirmationCode) {
+    return res.status(400).json({ success: false, message: 'Preencha todos os campos!' });
+  }
+
+  try {
+    // Retrieve the temporary user data
+    const [tempUser] = await sql`
+      SELECT * FROM clientes_temp WHERE email = ${email} AND confirmation_code = ${confirmationCode}
+    `;
+
+    if (!tempUser) {
+      return res.status(400).json({ success: false, message: 'Código inválido ou expirado.' });
+    }
+
+    // Check if the code is expired
+    const now = new Date();
+    if (now > new Date(tempUser.code_expiration)) {
+      return res.status(400).json({ success: false, message: 'Código expirado.' });
+    }
+
+    // Hash the password
+    const senhaHash = await bcrypt.hash(senha, 10);
+
+    // Create the user in the main database
+    const novoCliente = await sql`
+      INSERT INTO clientes (nome, email, telefone, senha)
+      VALUES (${nome}, ${email}, ${telefone}, ${senhaHash})
+      RETURNING id, nome, email, telefone;
+    `;
+
+    // Delete the temporary user data
+    await sql`
+      DELETE FROM clientes_temp WHERE email = ${email};
+    `;
+
+    res.status(201).json({ success: true, data: novoCliente[0] });
+  } catch (error) {
+    console.error('[POST /clientes/confirm] Erro ao confirmar cliente:', error);
+    res.status(500).json({ success: false, message: 'Erro ao confirmar cliente.' });
   }
 };

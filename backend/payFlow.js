@@ -26,7 +26,7 @@ export async function createCheckout(req, res) {
     }
 
     // ✅ Append referenceId to redirect URL for frontend success tracking
-    const redirectUrl = `https://test-one-flax-17.vercel.app/reserva/concluida?referenceId=${referenceId}`;
+    const redirectUrl = `https://redirecturl-ppv3.onrender.com/redirect/success`;
 
     const payload = {
       reference_id: referenceId,
@@ -113,7 +113,7 @@ export async function createReservationAndPayment(req, res) {
       customer,
       items,
       notification_urls: [process.env.PAGSEGURO_NOTIFICATION_URL],
-      redirect_url: `https://test-one-flax-17.vercel.app/reserva/concluida?referenceId=${referenceId}`,
+      redirect_url: `hotelbrasileiro://reservas/reservaFinish`,
     };
 
     const response = await fetch(SANDBOX_URL, {
