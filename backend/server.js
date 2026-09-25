@@ -8,7 +8,6 @@ import swaggerUi from "swagger-ui-express";
 import path from "path";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import os from "os"; // Import os module for dynamic IP detection
 import quartosRoutes from "./routes/quartosRoutes.js";
 import clientesRoutes from "./routes/clientesRoutes.js";
 import reservasRoutes from "./routes/reservasRoutes.js";
@@ -18,22 +17,7 @@ import { sql } from "./config/db.js";
 // Load environment variables
 dotenv.config();
 
-// Get the local IP address dynamically
-const getLocalIP = () => {
-  const interfaces = os.networkInterfaces();
-  for (const name in interfaces) {
-    for (const iface of interfaces[name]) {
-      if (iface.family === "IPv4" && !iface.internal) {
-        return iface.address;
-      }
-    }
-  }
-  return "localhost"; // Fallback to localhost if no IP is found
-};
-
 const app = express();
-const LOCAL_IP = getLocalIP();
-const WEB_FRONT_PORT = process.env.WEB_FRONT_PORT;
 const WEB_BACK_PORT = process.env.WEB_BACK_PORT;
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -96,7 +80,6 @@ app.use("/api/quartos", quartosRoutes);
 app.use("/api/clientes", clientesRoutes);
 app.use("/api/reservas", reservasRoutes);
 app.use("/api/payments", payFlowRoutes);
-app.use("/uploads", express.static("uploads"));
 
 // Initialize the database
 async function startdb() {
@@ -109,7 +92,6 @@ async function startdb() {
         telefone VARCHAR(255) NOT NULL,
         senha VARCHAR(255) NOT NULL,
         role VARCHAR(50) DEFAULT 'cliente' :: character varying,
-        ft_perfil varchar(255),
         reset_token VARCHAR(4),
         reset_token_expiration TIMESTAMP
       );
