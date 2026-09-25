@@ -33,8 +33,8 @@ const getLocalIP = () => {
 
 const app = express();
 const LOCAL_IP = getLocalIP();
-const WEB_FRONT_PORT = process.env.WEB_FRONT_PORT || `https://test-one-flax-17.vercel.app`;
-const WEB_BACK_PORT = process.env.WEB_BACK_PORT || `https://hotel-brasileiro-back-1.onrender.com`;
+const WEB_FRONT_PORT = process.env.WEB_FRONT_PORT;
+const WEB_BACK_PORT = process.env.WEB_BACK_PORT;
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // Middlewares
@@ -73,8 +73,8 @@ app.post('/api/login', async (req, res) => {
     }
 
     const token = jwt.sign(
-      { 
-        id: user.id, 
+      {
+        id: user.id,
         email: user.email,
         role: user.role
       },
