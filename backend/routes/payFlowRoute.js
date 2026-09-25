@@ -1,11 +1,6 @@
 // backend/routes/payFlowRoute.js
 import express from "express";
-import {
-  createCheckout,
-  handleNotification,
-  getPaymentStatus,
-  createReservationAndPayment,
-} from "../payFlow.js";
+import { createCheckout, handleNotification, getPaymentStatus, createReservationAndPayment } from "../payFlow.js";
 
 const router = express.Router();
 
@@ -19,9 +14,6 @@ router.get("/status/:referenceId", getPaymentStatus);
 router.post("/notifications", handleNotification);
 
 // Create reservation and initiate payment
-router.post(
-  "/reservas/criar-e-pagar",
-  createReservationAndPayment
-);
+router.post("/reservas/criar-e-pagar", createReservationAndPayment);
 
 export default router;

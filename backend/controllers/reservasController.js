@@ -12,9 +12,7 @@ export const buscarReservas = async (req, res) => {
     res.status(200).json({ success: true, data: reservas });
   } catch (error) {
     console.error("[GET /reservas] Erro na função buscarReservas:", error);
-    res
-      .status(500)
-      .json({ success: false, message: "Erro interno no servidor" });
+    res.status(500).json({ success: false, message: "Erro interno no servidor" });
   }
 };
 
@@ -46,13 +44,13 @@ export const criarReserva = async (req, res) => {
   try {
     // Verificar disponibilidade
     const disponibilidadeResult = await sql`
-      SELECT 
+      SELECT
         q.quantidade AS total_quartos,
         q.preco,
         COUNT(r.id) AS reservas_no_periodo
       FROM quartos q
-      LEFT JOIN reservas r 
-        ON r.quarto_id = q.id 
+      LEFT JOIN reservas r
+        ON r.quarto_id = q.id
         AND (r.inicio <= ${fim} AND r.fim >= ${inicio})
       WHERE q.id = ${quarto_id}
       GROUP BY q.quantidade, q.preco;
@@ -82,11 +80,11 @@ export const criarReserva = async (req, res) => {
     // Calcular preço total
     const preco_total = Number(preco) * diarias;
 
-      // Inserir reserva com preco_total e reservado_em
-      const reservaResult = await sql`
-        INSERT INTO reservas 
+    // Inserir reserva com preco_total e reservado_em
+    const reservaResult = await sql`
+        INSERT INTO reservas
           (quarto_id, cliente_id, hospedes, inicio, fim, preco_total, reservado_em)
-        VALUES 
+        VALUES
           (${quarto_id}, ${cliente_id}, ${hospedes}, ${inicio}, ${fim}, ${preco_total}, NOW())
         RETURNING *;
       `;
@@ -109,18 +107,14 @@ export const buscarReservaId = async (req, res) => {
 
     if (!reserva.length) {
       console.warn(`[GET /reservas/${id}] Reserva não encontrada.`);
-      return res
-        .status(404)
-        .json({ success: false, message: "Reserva não encontrada" });
+      return res.status(404).json({ success: false, message: "Reserva não encontrada" });
     }
 
     console.log(`[GET /reservas/${id}] Reserva encontrada:`, reserva[0]);
     res.status(200).json({ success: true, data: reserva[0] });
   } catch (error) {
     console.error(`[GET /reservas/${id}] Erro na função buscarReservaId:`, error);
-    res
-      .status(500)
-      .json({ success: false, message: "Erro interno no servidor" });
+    res.status(500).json({ success: false, message: "Erro interno no servidor" });
   }
 };
 
@@ -139,18 +133,14 @@ export const atualizarReserva = async (req, res) => {
 
     if (!reservaAtualizada.length) {
       console.warn(`[PUT /reservas/${id}] Reserva não encontrada para atualização.`);
-      return res
-        .status(404)
-        .json({ success: false, message: "Reserva não encontrada" });
+      return res.status(404).json({ success: false, message: "Reserva não encontrada" });
     }
 
     console.log(`[PUT /reservas/${id}] Reserva atualizada:`, reservaAtualizada[0]);
     res.status(200).json({ success: true, data: reservaAtualizada[0] });
   } catch (error) {
     console.error(`[PUT /reservas/${id}] Erro na função atualizarReserva:`, error);
-    res
-      .status(500)
-      .json({ success: false, message: "Erro interno no servidor" });
+    res.status(500).json({ success: false, message: "Erro interno no servidor" });
   }
 };
 
@@ -166,9 +156,7 @@ export const deletarReserva = async (req, res) => {
 
     if (!reservaDeletada.length) {
       console.warn(`[DELETE /reservas/${id}] Reserva não encontrada para exclusão.`);
-      return res
-        .status(404)
-        .json({ success: false, message: "Reserva não encontrada" });
+      return res.status(404).json({ success: false, message: "Reserva não encontrada" });
     }
 
     console.log(`[DELETE /reservas/${id}] Reserva deletada:`, reservaDeletada[0]);
@@ -178,9 +166,7 @@ export const deletarReserva = async (req, res) => {
     });
   } catch (error) {
     console.error(`[DELETE /reservas/${id}] Erro na função deletarReserva:`, error);
-    res
-      .status(500)
-      .json({ success: false, message: "Erro interno no servidor" });
+    res.status(500).json({ success: false, message: "Erro interno no servidor" });
   }
 };
 
@@ -206,11 +192,10 @@ export async function getReservasUsuario(req, res) {
 
     res.json(reservas);
   } catch (error) {
-    console.error('Erro ao buscar reservas:', error);
-    res.status(500).json({ error: 'Erro ao buscar reservas' });
+    console.error("Erro ao buscar reservas:", error);
+    res.status(500).json({ error: "Erro ao buscar reservas" });
   }
 }
-
 
 // Estatísticas de reservas: lucro total, lucro por período, receita mensal
 export const getEstatisticasReservas = async (req, res) => {
@@ -239,22 +224,22 @@ export const getEstatisticasReservas = async (req, res) => {
       WHERE reservado_em >= NOW() - INTERVAL '1 month'
     `;
 
-      // Reservas acumuladas nos últimos 12 meses
-      const [count12] = await sql`
+    // Reservas acumuladas nos últimos 12 meses
+    const [count12] = await sql`
         SELECT COUNT(*) AS reservas_12m
         FROM reservas
         WHERE reservado_em >= NOW() - INTERVAL '12 months'
       `;
 
-      // Reservas acumuladas nos últimos 6 meses
-      const [count6] = await sql`
+    // Reservas acumuladas nos últimos 6 meses
+    const [count6] = await sql`
         SELECT COUNT(*) AS reservas_6m
         FROM reservas
         WHERE reservado_em >= NOW() - INTERVAL '6 months'
       `;
 
-      // Reservas acumuladas no último mês
-      const [count1] = await sql`
+    // Reservas acumuladas no último mês
+    const [count1] = await sql`
         SELECT COUNT(*) AS reservas_1m
         FROM reservas
         WHERE reservado_em >= NOW() - INTERVAL '1 month'
@@ -277,13 +262,13 @@ export const getEstatisticasReservas = async (req, res) => {
       profit_12m: last12.profit_12m,
       profit_6m: last6.profit_6m,
       profit_1m: last1.profit_1m,
-    reservas_12m: count12.reservas_12m,
-    reservas_6m: count6.reservas_6m,
-    reservas_1m: count1.reservas_1m,
-      monthly_income: monthly
+      reservas_12m: count12.reservas_12m,
+      reservas_6m: count6.reservas_6m,
+      reservas_1m: count1.reservas_1m,
+      monthly_income: monthly,
     });
   } catch (error) {
-    console.error('Erro ao buscar estatísticas:', error);
-    res.status(500).json({ error: 'Erro ao buscar estatísticas' });
+    console.error("Erro ao buscar estatísticas:", error);
+    res.status(500).json({ error: "Erro ao buscar estatísticas" });
   }
-}
+};

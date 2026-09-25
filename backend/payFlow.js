@@ -1,10 +1,10 @@
-import fetch from 'node-fetch';
-import dotenv from 'dotenv';
-import { sql } from './config/db.js';
+import fetch from "node-fetch";
+import dotenv from "dotenv";
+import { sql } from "./config/db.js";
 dotenv.config();
 
 // ✅ Correct PagBank Sandbox endpoint (new API)
-const SANDBOX_URL = 'https://sandbox.api.pagseguro.com/checkouts';
+const SANDBOX_URL = "https://sandbox.api.pagseguro.com/checkouts";
 const TOKEN = process.env.PAGSEGURO_SANDBOX_TOKEN;
 
 /**
@@ -16,13 +16,13 @@ export async function createCheckout(req, res) {
 
     // Validate required fields
     if (!referenceId || !customer || !items || items.length === 0) {
-      console.error('❌ Missing required fields:', { referenceId, customer, items, redirectUrls });
-      return res.status(400).json({ success: false, message: 'Missing required fields' });
+      console.error("❌ Missing required fields:", { referenceId, customer, items, redirectUrls });
+      return res.status(400).json({ success: false, message: "Missing required fields" });
     }
 
     if (!TOKEN) {
-      console.error('❌ PAGSEGURO_SANDBOX_TOKEN not set in .env');
-      return res.status(500).json({ success: false, message: 'PagBank API token missing' });
+      console.error("❌ PAGSEGURO_SANDBOX_TOKEN not set in .env");
+      return res.status(500).json({ success: false, message: "PagBank API token missing" });
     }
 
     // ✅ Append referenceId to redirect URL for frontend success tracking
@@ -36,13 +36,13 @@ export async function createCheckout(req, res) {
       redirect_url: redirectUrl,
     };
 
-    console.log('📦 Sending payload to PagBank API:\n', JSON.stringify(payload, null, 2));
+    console.log("📦 Sending payload to PagBank API:\n", JSON.stringify(payload, null, 2));
 
     const response = await fetch(SANDBOX_URL, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${TOKEN}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${TOKEN}`,
       },
       body: JSON.stringify(payload),
     });
@@ -54,26 +54,26 @@ export async function createCheckout(req, res) {
     try {
       data = JSON.parse(text);
     } catch (parseErr) {
-      console.error('⚠️ PagBank returned non-JSON (likely an HTML error page):');
+      console.error("⚠️ PagBank returned non-JSON (likely an HTML error page):");
       console.error(text);
       return res.status(502).json({
         success: false,
-        message: 'Invalid response from PagBank (HTML instead of JSON)',
+        message: "Invalid response from PagBank (HTML instead of JSON)",
       });
     }
 
-    console.log('✅ PagBank API response:', JSON.stringify(data, null, 2));
+    console.log("✅ PagBank API response:", JSON.stringify(data, null, 2));
 
     if (!response.ok) {
-      console.error('❌ PagBank API returned error:', data);
+      console.error("❌ PagBank API returned error:", data);
       return res.status(response.status).json({ success: false, data });
     }
 
     // Extract checkout URL
-    const checkoutUrl = data.links?.find(l => l.rel === 'PAY')?.href || null;
+    const checkoutUrl = data.links?.find((l) => l.rel === "PAY")?.href || null;
 
     if (!checkoutUrl) {
-      console.warn('⚠️ No checkout URL returned by PagBank.');
+      console.warn("⚠️ No checkout URL returned by PagBank.");
     }
 
     return res.status(200).json({
@@ -82,8 +82,8 @@ export async function createCheckout(req, res) {
       data,
     });
   } catch (error) {
-    console.error('💥 Error in createCheckout:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.error("💥 Error in createCheckout:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 }
 
@@ -95,7 +95,7 @@ export async function createReservationAndPayment(req, res) {
     const { quarto_id, hospedes, inicio, fim, preco_total, customer, items } = req.body;
 
     if (!quarto_id || !hospedes || !inicio || !fim || !preco_total || !customer || !items) {
-      return res.status(400).json({ success: false, message: 'Missing required fields' });
+      return res.status(400).json({ success: false, message: "Missing required fields" });
     }
 
     const referenceId = `reserva_${Date.now()}`;
@@ -117,9 +117,9 @@ export async function createReservationAndPayment(req, res) {
     };
 
     const response = await fetch(SANDBOX_URL, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${TOKEN}`,
       },
       body: JSON.stringify(payload),
@@ -128,16 +128,16 @@ export async function createReservationAndPayment(req, res) {
     const data = await response.json();
 
     if (!response.ok || !data.links) {
-      console.error('PagBank error:', data);
-      return res.status(500).json({ success: false, message: 'Failed to create PagBank checkout' });
+      console.error("PagBank error:", data);
+      return res.status(500).json({ success: false, message: "Failed to create PagBank checkout" });
     }
 
-    const checkoutUrl = data.links.find((l) => l.rel === 'PAY')?.href;
+    const checkoutUrl = data.links.find((l) => l.rel === "PAY")?.href;
 
     return res.status(200).json({ success: true, checkoutUrl });
   } catch (error) {
-    console.error('Error creating reservation and payment:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.error("Error creating reservation and payment:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 }
 
@@ -148,10 +148,10 @@ export async function handleNotification(req, res) {
   try {
     const notification = req.body;
     const referenceId = notification.reference_id;
-    const status = notification.charges?.[0]?.status || 'UNKNOWN';
+    const status = notification.charges?.[0]?.status || "UNKNOWN";
 
     if (!referenceId || !status) {
-      return res.status(400).json({ success: false, message: 'Invalid notification payload' });
+      return res.status(400).json({ success: false, message: "Invalid notification payload" });
     }
 
     // Update reservation status in the database
@@ -163,8 +163,8 @@ export async function handleNotification(req, res) {
 
     res.status(200).json({ success: true });
   } catch (error) {
-    console.error('Error handling notification:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.error("Error handling notification:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 }
 
@@ -176,7 +176,7 @@ export async function getPaymentStatus(req, res) {
     const { referenceId } = req.params;
 
     if (!referenceId) {
-      return res.status(400).json({ success: false, message: 'Reference ID is required' });
+      return res.status(400).json({ success: false, message: "Reference ID is required" });
     }
 
     const [reservation] = await sql`
@@ -184,12 +184,12 @@ export async function getPaymentStatus(req, res) {
     `;
 
     if (!reservation) {
-      return res.status(404).json({ success: false, message: 'Reservation not found' });
+      return res.status(404).json({ success: false, message: "Reservation not found" });
     }
 
     res.status(200).json({ success: true, status: reservation.status });
   } catch (error) {
-    console.error('Error fetching payment status:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.error("Error fetching payment status:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 }

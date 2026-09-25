@@ -15,7 +15,7 @@ paths:
       summary: Buscar todos os clientes
       description: Retorna uma lista de todos os clientes cadastrados.
       responses:
-        '200':
+        "200":
           description: Lista de clientes obtida com sucesso.
           content:
             application/json:
@@ -28,8 +28,8 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Cliente'
-        '500':
+                      $ref: "#/components/schemas/Cliente"
+        "500":
           description: Erro interno no servidor.
           content:
             application/json:
@@ -70,7 +70,7 @@ paths:
                 - telefone
                 - senha
       responses:
-        '201':
+        "201":
           description: Cliente criado com sucesso.
           content:
             application/json:
@@ -81,8 +81,8 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    $ref: '#/components/schemas/Cliente'
-        '400':
+                    $ref: "#/components/schemas/Cliente"
+        "400":
           description: Requisição inválida.
           content:
             application/json:
@@ -95,7 +95,7 @@ paths:
                   message:
                     type: string
                     example: "Preencha todos os campos!"
-        '500':
+        "500":
           description: Erro interno no servidor.
           content:
             application/json:
@@ -121,7 +121,7 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        "200":
           description: Cliente encontrado.
           content:
             application/json:
@@ -132,8 +132,8 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    $ref: '#/components/schemas/Cliente'
-        '404':
+                    $ref: "#/components/schemas/Cliente"
+        "404":
           description: Cliente não encontrado.
           content:
             application/json:
@@ -146,7 +146,7 @@ paths:
                   message:
                     type: string
                     example: "Cliente não encontrado"
-        '500':
+        "500":
           description: Erro interno no servidor.
           content:
             application/json:
@@ -189,7 +189,7 @@ paths:
                   type: string
                   example: "senha123"
       responses:
-        '200':
+        "200":
           description: Cliente atualizado com sucesso.
           content:
             application/json:
@@ -200,8 +200,8 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    $ref: '#/components/schemas/Cliente'
-        '404':
+                    $ref: "#/components/schemas/Cliente"
+        "404":
           description: Cliente não encontrado.
           content:
             application/json:
@@ -214,7 +214,7 @@ paths:
                   message:
                     type: string
                     example: "Cliente não encontrado"
-        '500':
+        "500":
           description: Erro interno no servidor.
           content:
             application/json:
@@ -238,7 +238,7 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        "200":
           description: Cliente deletado com sucesso.
           content:
             application/json:
@@ -249,8 +249,8 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    $ref: '#/components/schemas/Cliente'
-        '404':
+                    $ref: "#/components/schemas/Cliente"
+        "404":
           description: Cliente não encontrado.
           content:
             application/json:
@@ -263,7 +263,7 @@ paths:
                   message:
                     type: string
                     example: "Cliente não encontrado"
-        '500':
+        "500":
           description: Erro interno no servidor.
           content:
             application/json:
@@ -283,13 +283,13 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: Dados do cliente autenticado retornados com sucesso.
-        '404':
+        "404":
           description: Cliente não encontrado.
-        '401':
+        "401":
           description: Não autenticado.
-        '500':
+        "500":
           description: Erro interno no servidor.
 
   # QUARTOS
@@ -298,7 +298,7 @@ paths:
       summary: Buscar todos os quartos
       description: Retorna uma lista de todos os quartos cadastrados.
       responses:
-        '200':
+        "200":
           description: Lista de quartos obtida com sucesso.
           content:
             application/json:
@@ -311,8 +311,8 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Quarto'
-        '500':
+                      $ref: "#/components/schemas/Quarto"
+        "500":
           description: Erro interno no servidor.
           content:
             application/json:
@@ -356,7 +356,7 @@ paths:
                 - preco
                 - quantidade
       responses:
-        '201':
+        "201":
           description: Quarto adicionado com sucesso.
           content:
             application/json:
@@ -367,8 +367,8 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    $ref: '#/components/schemas/Quarto'
-        '400':
+                    $ref: "#/components/schemas/Quarto"
+        "400":
           description: Requisição inválida - Preencha todos os campos obrigatórios.
           content:
             application/json:
@@ -381,7 +381,7 @@ paths:
                   message:
                     type: string
                     example: "Preencha todos os campos obrigatórios!"
-        '500':
+        "500":
           description: Erro interno no servidor.
           content:
             application/json:
@@ -407,7 +407,7 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        "200":
           description: Quarto encontrado.
           content:
             application/json:
@@ -418,8 +418,8 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    $ref: '#/components/schemas/Quarto'
-        '404':
+                    $ref: "#/components/schemas/Quarto"
+        "404":
           description: Quarto não encontrado.
           content:
             application/json:
@@ -432,7 +432,7 @@ paths:
                   message:
                     type: string
                     example: "Quarto não encontrado"
-        '500':
+        "500":
           description: Erro interno no servidor.
           content:
             application/json:
@@ -479,7 +479,7 @@ paths:
                   type: integer
                   example: 5
       responses:
-        '200':
+        "200":
           description: Quarto atualizado com sucesso.
           content:
             application/json:
@@ -490,8 +490,8 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    $ref: '#/components/schemas/Quarto'
-        '404':
+                    $ref: "#/components/schemas/Quarto"
+        "404":
           description: Quarto não encontrado.
           content:
             application/json:
@@ -504,7 +504,7 @@ paths:
                   message:
                     type: string
                     example: "Quarto não encontrado"
-        '500':
+        "500":
           description: Erro interno no servidor.
           content:
             application/json:
@@ -528,7 +528,7 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        "200":
           description: Quarto deletado com sucesso.
           content:
             application/json:
@@ -539,8 +539,8 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    $ref: '#/components/schemas/Quarto'
-        '404':
+                    $ref: "#/components/schemas/Quarto"
+        "404":
           description: Quarto não encontrado.
           content:
             application/json:
@@ -553,7 +553,7 @@ paths:
                   message:
                     type: string
                     example: "Quarto não encontrado"
-        '500':
+        "500":
           description: Erro interno no servidor.
           content:
             application/json:
@@ -573,7 +573,7 @@ paths:
       summary: Buscar todas as reservas
       description: Retorna uma lista de todas as reservas cadastradas.
       responses:
-        '200':
+        "200":
           description: Lista de reservas obtida com sucesso.
           content:
             application/json:
@@ -586,8 +586,8 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Reserva'
-        '500':
+                      $ref: "#/components/schemas/Reserva"
+        "500":
           description: Erro interno no servidor.
           content:
             application/json:
@@ -634,7 +634,7 @@ paths:
                 - inicio
                 - fim
       responses:
-        '201':
+        "201":
           description: Reserva criada com sucesso.
           content:
             application/json:
@@ -645,8 +645,8 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    $ref: '#/components/schemas/Reserva'
-        '400':
+                    $ref: "#/components/schemas/Reserva"
+        "400":
           description: Requisição inválida.
           content:
             application/json:
@@ -659,7 +659,7 @@ paths:
                   message:
                     type: string
                     example: "Dados inválidos ou quarto indisponível"
-        '500':
+        "500":
           description: Erro interno no servidor.
           content:
             application/json:
@@ -685,7 +685,7 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        "200":
           description: Reserva encontrada.
           content:
             application/json:
@@ -696,8 +696,8 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    $ref: '#/components/schemas/Reserva'
-        '404':
+                    $ref: "#/components/schemas/Reserva"
+        "404":
           description: Reserva não encontrada.
           content:
             application/json:
@@ -710,7 +710,7 @@ paths:
                   message:
                     type: string
                     example: "Reserva não encontrada"
-        '500':
+        "500":
           description: Erro interno no servidor.
           content:
             application/json:
@@ -758,7 +758,7 @@ paths:
                   format: date
                   example: "2025-06-05"
       responses:
-        '200':
+        "200":
           description: Reserva atualizada com sucesso.
           content:
             application/json:
@@ -769,8 +769,8 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    $ref: '#/components/schemas/Reserva'
-        '404':
+                    $ref: "#/components/schemas/Reserva"
+        "404":
           description: Reserva não encontrada.
           content:
             application/json:
@@ -783,7 +783,7 @@ paths:
                   message:
                     type: string
                     example: "Reserva não encontrada"
-        '500':
+        "500":
           description: Erro interno no servidor.
           content:
             application/json:
@@ -807,7 +807,7 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        "200":
           description: Reserva deletada com sucesso.
           content:
             application/json:
@@ -818,8 +818,8 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    $ref: '#/components/schemas/Reserva'
-        '404':
+                    $ref: "#/components/schemas/Reserva"
+        "404":
           description: Reserva não encontrada.
           content:
             application/json:
@@ -832,7 +832,7 @@ paths:
                   message:
                     type: string
                     example: "Reserva não encontrada"
-        '500':
+        "500":
           description: Erro interno no servidor.
           content:
             application/json:
@@ -852,11 +852,11 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: Lista de reservas do usuário obtida com sucesso.
-        '401':
+        "401":
           description: Não autenticado.
-        '500':
+        "500":
           description: Erro interno no servidor
 
 components:
