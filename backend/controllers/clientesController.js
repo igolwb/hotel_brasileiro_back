@@ -68,23 +68,6 @@ export const buscarClientes = async(req, res) => {
     }
 };
 
-// Upload de foto de perfil
-export const atualizarFotoPerfil = async (req, res) => {
-  const { id } = req.params;
-  if (!req.file) {
-    return res.status(400).json({ success: false, message: 'Nenhuma imagem enviada.' });
-  }
-  const imagePath = req.file.path; // e.g., 'uploads/profile_123.jpg'
-  try {
-    await sql`
-      UPDATE clientes SET ft_perfil = ${imagePath} WHERE id = ${id}
-    `;
-    res.status(200).json({ success: true, ft_perfil: imagePath });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Erro ao salvar imagem.' });
-  }
-};
-
 // Busca todas as reservas de um cliente, incluindo o nome do quarto
 export const buscarReservasCliente = async (req, res) => {
   const { id } = req.params;
